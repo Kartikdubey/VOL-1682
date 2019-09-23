@@ -75,7 +75,7 @@ WORKDIR /app
 
 # Copy required files
 COPY --from=build-env /build/simulated_onu /app/
-
+COPY adapters/simulated_onu/VERSION /app/
 # Label image
 ARG org_label_schema_version=unknown
 ARG org_label_schema_vcs_url=unknown

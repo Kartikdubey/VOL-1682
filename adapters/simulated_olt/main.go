@@ -33,6 +33,7 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+        "io/ioutil"
 )
 
 type adapter struct {
@@ -51,7 +52,14 @@ type adapter struct {
 func init() {
 	log.AddPackage(log.JSON, log.DebugLevel, nil)
 }
-
+func getVersion() string {
+        log.Info("in file handling function")
+        data, err := ioutil.ReadFile("./VERSION")
+        if err != nil {
+           log.Fatal (err)
+        }
+        return string(data)
+}
 func newAdapter(cf *config.AdapterFlags) *adapter {
 	var a adapter
 	a.instanceId = cf.InstanceID
@@ -92,7 +100,7 @@ func (a *adapter) start(ctx context.Context) {
 
 	// Register the core request handler
 	if err = a.setupRequestHandler(a.instanceId, a.iAdapter, a.coreProxy); err != nil {
-		log.Fatal("error-setting-core-request-handler")
+                log.Fatal("error-setting-core-request-handler")
 	}
 
 	//	Register this adapter to the Core - retries indefinitely
@@ -232,8 +240,11 @@ func (a *adapter) setupRequestHandler(coreInstanceId string, iadapter adapters.I
 
 func (a *adapter) registerWithCore(retries int) error {
 	log.Info("registering-with-core")
-	adapterDescription := &voltha.Adapter{Id: "simulated_olt", Vendor: "simulation Enterprise Inc"}
-	types := []*voltha.DeviceType{{Id: "simulated_olt", Adapter: "simulated_olt", AcceptsAddRemoveFlowUpdates: true}}
+        version := getVersion()
+        fmt.Println(version)
+        adapterDescription := &voltha.Adapter{Id: "simulated_olt", Vendor: "simulation Enterprise Inc",Version:version}
+	log.Warnw("adapterDescri--myValu", log.Fields{"value": adapterDescription})
+        types := []*voltha.DeviceType{{Id: "simulated_olt", Adapter: "simulated_olt", AcceptsAddRemoveFlowUpdates: true}}
 	deviceTypes := &voltha.DeviceTypes{Items: types}
 	count := 0
 	for {

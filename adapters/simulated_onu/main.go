@@ -33,6 +33,7 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+        "io/ioutil"
 )
 
 type adapter struct {
@@ -51,7 +52,14 @@ type adapter struct {
 func init() {
 	log.AddPackage(log.JSON, log.DebugLevel, nil)
 }
-
+func getVersion() string {
+        log.Info("in file handling function")
+        data, err := ioutil.ReadFile("./VERSION")
+        if err != nil {
+        log.Fatal (err)
+        }
+       return string(data)
+}
 func newAdapter(cf *config.AdapterFlags) *adapter {
 	var a adapter
 	a.instanceId = cf.InstanceID
@@ -231,7 +239,10 @@ func (a *adapter) setupRequestHandler(coreInstanceId string, iadapter adapters.I
 }
 func (a *adapter) registerWithCore(retries int) error {
 	log.Info("registering-with-core")
-	adapterDescription := &voltha.Adapter{Id: "simulated_onu", Vendor: "simulation Enterprise Inc"}
+        version := getVersion()
+        fmt.Println(version)
+        adapterDescription := &voltha.Adapter{Id: "simulated_onu", Vendor: "simulation Enterprise Inc",Version:version}
+        log.Warnw("registering-with-my", log.Fields{"error": adapterDescription})
 	types := []*voltha.DeviceType{{Id: "simulated_onu", Adapter: "simulated_onu"}}
 	deviceTypes := &voltha.DeviceTypes{Items: types}
 	count := 0
